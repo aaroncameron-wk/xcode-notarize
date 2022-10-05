@@ -133,7 +133,7 @@ const submit = async ({productPath, archivePath, primaryBundleId, username, pass
         xcrun.stderr.pipe(process.stderr);
     }
 
-    const {exitCode, stdout, stderr} = await xcrun;
+    const {exitCode, stdout} = await xcrun;
 
     if (exitCode === undefined) {
         // TODO Command did not run at all
@@ -176,7 +176,9 @@ const wait = async ({uuid, username, password, verbose}) => {
         args.push("--verbose");
     }
 
-    for (let i = 0; i < 10; i++) {
+    const timeoutMs = Date.now() + 1000 * 60 * 90 // 90 minutes
+
+    while (Date.now() < timeoutMs) {
         let xcrun = execa("xcrun", args, {reject: false});
 
         if (verbose == true) {
@@ -184,7 +186,7 @@ const wait = async ({uuid, username, password, verbose}) => {
             xcrun.stderr.pipe(process.stderr);
         }
 
-        const {exitCode, stdout, stderr} = await xcrun;
+        const {exitCode, stdout} = await xcrun;
 
         if (exitCode === undefined) {
             // TODO Command did not run at all
@@ -228,7 +230,7 @@ const wait = async ({uuid, username, password, verbose}) => {
         await sleep(30000);
     }
 
-    core.error("Failed to get final notarization status on time.");
+    core.error("Timed out while waiting for a notarization result.");
 
     return false;
 };
